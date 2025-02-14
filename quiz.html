@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kocham Neile</title>
+    <style>
+        body {
+            text-align: center;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to right, #ff758c, #ff7eb3);
+            color: white;
+            animation: fadeIn 1.5s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .container {
+            max-width: 500px;
+            margin: 50px auto;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            transition: transform 0.3s ease-in-out;
+        }
+        .container:hover {
+            transform: scale(1.05);
+        }
+        h1 {
+            color: #fff;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        .question {
+            margin-bottom: 15px;
+        }
+        .answer-btn {
+            display: block;
+            width: 100%;
+            background-color: #ff4b7d;
+            color: white;
+            border: none;
+            padding: 12px;
+            cursor: pointer;
+            border-radius: 25px;
+            font-size: 16px;
+            transition: background-color 0.3s, transform 0.2s;
+            margin: 5px 0;
+        }
+        .answer-btn:hover, .answer-btn.selected {
+            background-color: #ff1e63;
+            transform: scale(1.05);
+        }
+        .btn {
+            background-color: #ff4b7d;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            cursor: pointer;
+            border-radius: 25px;
+            font-size: 16px;
+            transition: background-color 0.3s, transform 0.2s;
+            margin-top: 10px;
+        }
+        .btn:hover {
+            background-color: #ff1e63;
+            transform: scale(1.1);
+        }
+        .result {
+            display: none;
+            margin-top: 20px;
+            font-size: 20px;
+            font-weight: bold;
+            animation: fadeIn 1s;
+        }
+        .correct {
+            color: lightgreen;
+        }
+        .incorrect {
+            color: rgb(77, 2, 2);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Quiz królikowy, jak dobrze znasz mikiego i nasz zwiazek?</h1>
+        <div id="quiz"></div>
+        <button class="btn" onclick="calculateResult()">Sprawdź wynik!</button>
+        <div class="result" id="result"></div>
+    </div>
+
+    <script>
+        const questions = [
+            { question: "Gdzie mieliśmy naszą pierwszą randkę?", answers: ["Kawiarnia", "Vitkac", "Park", "Restauracja"], correct: "Vitkac" },
+            { question: "Jaki jest 'nasz' serial?", answers: ["Family Guy", "South Park", "The Simpsons", "Squid Game"], correct: "Family Guy" },
+            { question: "Gdzie pierwszy powiedzieliśmy sobie 'Kocham Cię'?", answers: ["W Wiadomości", "W kawiarni", "U ciebie w domu", "W parku na ławce"], correct: "W parku na ławce" },
+            { question: "Jaka jest 'nasza' piosenka?", answers: ["Limuzyna - Sentino", "Codeine Crazy - Future", "Freestyle - Lil Baby", "712PM - Future"], correct: "Codeine Crazy - Future" },
+            { question: "Od kiedy jesteśmy razem?", answers: ["17 lipiec", "14 lipiec", "24 lipiec", "7 lipiec"], correct: "14 lipiec" },
+            { question: "Gdzie się pierwszy raz zobaczyliśmy?", answers: ["Na Koncercie", "Na imprezie", "W Vitkacu", "Przy stacji benzynowej"], correct: "Przy stacji benzynowej" },
+            { question: "Kiedy pierwszy raz się pocałowaliśmy lol?", answers: ["15 lipca", "14 lipca", "22 lipca", "17 lipca"], correct: "14 lipca" },
+            { question: "Jaki był mój pierwszy prezent dla ciebie?", answers: ["Kwiatki", "Słodycze", "Pluszak", "Koszulka"], correct: "Słodycze" },
+            { question: "Gdzie będziemy mieszkać w przyszłości?", answers: ["W Egipcie", "W Ameryce", "We Włoszech", "We Francji"], correct: "We Włoszech" },
+            { question: "Czym jest chomiaczek?", answers: ["No Chomik wtf", "Mały Chomik", "Królik", "meow (those who know)"], correct: "meow (those who know)" },
+            { question: "Jaki był pierwszy film, jaki obejrzeliśmy?", answers: ["Seven", "Fight Club", "Tytanik", "Kewin sam w domu"], correct: "Fight Club" },
+            { question: "Kto pierwszy powiedział 'kocham cię'?", answers: ["Miki", "Neili", "meow", "meow"], correct: "Miki" },
+            { question: "Gdzie Neila ma słaby punkt?", answers: ["Pod pachami", "Na stopach", "Pod kolanami", "Schabiki"], correct: "Schabiki" },
+            { question: "Ile razy jedliśmy we Flamingu?", answers: ["1", "2", "3", "4"], correct: "3" },
+            { question: "Jakie było pierwsza rzecz, jaką zjedliśmy razem?", answers: ["Hot dog", "Fondant", "Sałatka Cezar", "Kebab"], correct: "Fondant" },
+            { question: "Jakiego koloru mam oczy?", answers: ["Brązowe", "Niebieskie", "Szare", "Zielone"], correct: "Brązowe" },
+            { question: "Jak mają na imię moje pieski?", answers: ["Fifi Harry Helga Elmo", "Elmo Fifi", "Fifi Elmo Harry", "Harry Hela Elmo Fifi"], correct: "Fifi Elmo Harry" },
+            { question: "Gdzie chowa się Hela zawsze, jak przychodzisz?", answers: ["W sypialni", "Pod zasłoną", "W kuchni", "W pralni"], correct: "W pralni" },
+            { question: "W jakiej kolejności były 3 pierwsze napoje, jakie razem wypiliśmy?", answers: ["Drink Matcha Drink", "Drink Drink Matcha", "Matcha Drink Drink", "Drink Matcha Matcha"], correct: "Drink Drink Matcha" },
+            { question: "Czego się boję?", answers: ["Pająków", "Wysokości", "Węży", "Neili, która ma okres"], correct: "Neili, która ma okres" },
+            { question: "Jaki jest nasz wspólny ulubiony serial dzieciństwa?", answers: ["Scooby Doo", "Tom i Jerry", "SpongeBob", "Garfield"], correct: "Scooby Doo" },
+            { question: "Pytanie bardziej do Taty Neili, kiedy sleepover? (pls pls pls pls)", answers: ["Niedługo <3", "Do końca miesiąca!", "W następny weekend", "22.02.2025"], correct: "Niedługo <3" }
+        ];
+        
+        const quizContainer = document.getElementById("quiz");
+        let selectedAnswers = {};
+        
+        function loadQuiz() {
+            questions.forEach((q, index) => {
+                let questionBlock = document.createElement("div");
+                questionBlock.classList.add("question");
+                questionBlock.innerHTML = `<p>${index + 1}. ${q.question}</p>`;
+                
+                q.answers.forEach(answer => {
+                    let button = document.createElement("button");
+                    button.classList.add("answer-btn");
+                    button.textContent = answer;
+                    button.onclick = function() {
+                        let buttons = questionBlock.querySelectorAll(".answer-btn");
+                        buttons.forEach(btn => btn.classList.remove("selected"));
+                        this.classList.add("selected");
+                        selectedAnswers[index] = this.textContent;
+                    };
+                    questionBlock.appendChild(button);
+                });
+                
+                quizContainer.appendChild(questionBlock);
+            });
+        }
+        
+        function calculateResult() {
+            let correctCount = 0;
+            let resultHTML = "Twój wynik: <br>";
+            
+            questions.forEach((q, index) => {
+                let userAnswer = selectedAnswers[index];
+                let isCorrect = userAnswer === q.correct;
+                
+                if (isCorrect) correctCount++;
+                
+                resultHTML += `<p class="${isCorrect ? 'correct' : 'incorrect'}">${index + 1}. ${q.question} - ` +
+                              `Twoja odpowiedź: ${userAnswer || "Brak odpowiedzi"} ` +
+                              `${isCorrect ? "✅" : `❌ (Poprawna: ${q.correct})`}</p>`;
+            });
+            
+            resultHTML = `Twój wynik: ${correctCount} / ${questions.length}!<br><br>` + resultHTML;
+            
+            document.getElementById("result").innerHTML = resultHTML;
+            document.getElementById("result").style.display = "block";
+        }
+        
+        loadQuiz();
+    </script>
+</body>
+</html>
